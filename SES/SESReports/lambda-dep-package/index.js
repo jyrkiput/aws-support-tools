@@ -27,7 +27,7 @@ exports.handler = (event, context, callback) => {
             Bucket: bucket,
             Key: prefix + date + ".html",
             Body: content,
-            ACL: 'public-read',
+            ACL: 'private',
             ContentType: "text/html"
         };
         s3.upload(param, function (err, data) {
