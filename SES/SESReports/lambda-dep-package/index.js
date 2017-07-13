@@ -51,7 +51,7 @@ exports.handler = (event, context, callback) => {
             Message: {
                 Body: {
                     Html: {
-                        Data: url,
+                        Data: content,
                         Charset: 'utf-8'
                     },
                     Text: {
