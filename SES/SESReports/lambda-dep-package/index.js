@@ -139,6 +139,8 @@ exports.handler = (event, context, callback) => {
                     var bsubtype = null;
                     var diagcode = null;
 
+                    var deliveries = {};
+                    deliveryCount = 0;
                     //console.log(msg);
 
                     if (type == "Bounce") {
@@ -177,8 +179,11 @@ exports.handler = (event, context, callback) => {
                         }
 
                     } else if (type == "Delivery") {
-                        console.log("Delivery notification not supported");
-
+                        if (!deliveries[source + ":" + sourceIp]) {
+                            deliveries[source + ":" + sourceIp] = 0;
+                        }
+                        deliveries[source + ":" + sourceIp]++;
+                        deliveryCount++;
                     } else if (type == "Complaint") {
                         btype = "null";
                         bsubtype = "null";
@@ -198,16 +203,25 @@ exports.handler = (event, context, callback) => {
                     deleteMessage(message);
                     //console.log("Array size = " + messages.length + " with queue size = " + queueSize);
 
-                    if (messages.length == queueSize) {
+                    if (messages.length + deliveryCount == queueSize) {
+
+                        var msgDeliveries = [];
+                        Object.keys(deliveries).forEach(function (key) {
+                            var value = deliveries[key]
+                            text = otr + oline + key + cline + oline + value + cline + ftr;
+                            msgDeliveries.push(text)
+                        })
 
                         var bp = msgBouncePerm.join('');
                         var sp = msgSuppres.join('');
                         var bt = msgBounceTrans.join('');
                         var cp = msgComplaint.join('');
+                        var dd = msgDeliveries.join('')
                         var begin = fs.readFileSync('template/begin.html', 'utf8');
+                        var table = fs.readFileSync('template/table.html', 'utf8');
                         var middle = bp + sp + bt + cp;
                         var end = fs.readFileSync('template/end.html', 'utf8');
-                        content = begin + middle + end;
+                        content = begin + dd + table + middle + end;
 
                         s3upload();
 
